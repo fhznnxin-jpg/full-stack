@@ -1,0 +1,809 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI Pipeline | DevFlow</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --purple: #7950f2;
+    --blue: #3984ff;
+    --green: #16a36a;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --dark: #172033;
+    --muted: #718096;
+    --border: #e9eaf3;
+}
+
+body {
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    background: #f7f8fc;
+    color: var(--dark);
+}
+
+header {
+    background: linear-gradient(125deg, #29215e, #5940bb, #3984ff);
+    color: white;
+    padding: 24px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+}
+
+.logo span {
+    color: #a9e5ff;
+}
+
+.header-tag {
+    border: 1px solid #ffffff50;
+    padding: 7px 13px;
+    border-radius: 30px;
+    font-size: 12px;
+}
+
+main {
+    max-width: 1200px;
+    margin: auto;
+    padding: 45px 22px;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 1.3fr .7fr;
+    gap: 35px;
+    align-items: center;
+    margin-bottom: 38px;
+}
+
+.eyebrow {
+    color: var(--purple);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: clamp(34px, 5vw, 55px);
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #7950f2, #3984ff);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.hero p {
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 620px;
+    font-size: 16px;
+}
+
+.hero-art {
+    min-height: 230px;
+    border-radius: 25px;
+    background: linear-gradient(145deg, #ede9ff, #dceaff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.orbit {
+    width: 170px;
+    height: 170px;
+    border: 2px dashed #9a82f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: spin 20s linear infinite;
+}
+
+.core {
+    width: 95px;
+    height: 95px;
+    border-radius: 25px;
+    background: linear-gradient(135deg, #7950f2, #3984ff);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 15px 35px #7950f250;
+    animation: counterspin 20s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes counterspin {
+    to { transform: rotate(-360deg); }
+}
+
+.section-heading {
+    margin: 35px 0 17px;
+}
+
+.section-heading h2 {
+    font-size: 23px;
+    margin-bottom: 7px;
+}
+
+.section-heading p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 22px;
+    box-shadow: 0 8px 28px #24244d06;
+}
+
+.pipeline {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.stage {
+    background: #fafaff;
+    border: 1px solid #e9e4ff;
+    border-radius: 13px;
+    padding: 17px 10px;
+    text-align: center;
+    transition: .25s;
+}
+
+.stage.active {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px #7950f21c;
+    transform: translateY(-3px);
+}
+
+.stage.passed {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.stage.failed {
+    background: #fff1f2;
+    border-color: #fda4af;
+}
+
+.stage-icon {
+    font-size: 27px;
+    margin-bottom: 10px;
+}
+
+.stage h3 {
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.stage p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.stage-status {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    margin-top: 12px;
+    padding: 5px 8px;
+    border-radius: 20px;
+    background: #ececf4;
+    color: #697386;
+}
+
+.passed .stage-status {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.failed .stage-status {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.active .stage-status {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+button {
+    padding: 12px 17px;
+    border: none;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:hover {
+    opacity: .88;
+    transform: translateY(-1px);
+}
+
+.primary {
+    background: var(--purple);
+    color: white;
+}
+
+.secondary {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.pipeline-message {
+    margin-top: 16px;
+    padding: 13px 15px;
+    border-radius: 9px;
+    background: #f3f4f6;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.test-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.test-card {
+    padding: 21px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: white;
+}
+
+.test-top {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 13px;
+}
+
+.test-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.test-card h3 {
+    font-size: 16px;
+}
+
+.test-card p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.chip {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    margin-top: 14px;
+    padding: 6px 9px;
+    border-radius: 6px;
+}
+
+.purple-bg { background: #ede9fe; }
+.blue-bg { background: #dbeafe; }
+.green-bg { background: #dcfce7; }
+.orange-bg { background: #fef3c7; }
+
+.purple-chip { background: #ede9fe; color: #6d28d9; }
+.blue-chip { background: #dbeafe; color: #1d4ed8; }
+.green-chip { background: #dcfce7; color: #166534; }
+.orange-chip { background: #fef3c7; color: #92400e; }
+
+.test-details {
+    display: none;
+    padding-top: 12px;
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.test-details.show {
+    display: block;
+}
+
+.learn-btn {
+    background: transparent;
+    color: var(--purple);
+    padding: 10px 0 0;
+}
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.feature {
+    display: flex;
+    gap: 13px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f1f6;
+}
+
+.feature:last-child {
+    border-bottom: 0;
+}
+
+.feature-icon {
+    font-size: 21px;
+}
+
+.feature h3 {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.feature p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.log {
+    background: #16182a;
+    color: #b9fbc0;
+    border-radius: 12px;
+    padding: 17px;
+    min-height: 170px;
+    max-height: 260px;
+    overflow-y: auto;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    line-height: 2;
+    overflow-wrap: anywhere;
+}
+
+.log-line {
+    border-bottom: 1px solid #ffffff0c;
+}
+
+footer {
+    margin-top: 35px;
+    padding: 28px 15px;
+    text-align: center;
+    background: #17152d;
+    color: #c4c4dc;
+    font-size: 12px;
+}
+
+footer strong {
+    color: #b6a2ff;
+}
+
+@media(max-width: 850px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-art {
+        min-height: 190px;
+    }
+
+    .pipeline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width: 520px) {
+    header {
+        padding: 20px;
+    }
+
+    .header-tag {
+        display: none;
+    }
+
+    main {
+        padding: 30px 14px;
+    }
+
+    .test-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .panel {
+        padding: 16px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">Dev<span>Flow.</span></div>
+    <div class="header-tag">DEVELOPER WORKFLOW · CI/CD</div>
+</header>
+
+<main>
+
+    <section class="hero">
+        <div>
+            <div class="eyebrow">Build smarter. Ship confidently.</div>
+            <h1>Continuous Integration,
+                <span class="gradient-text">simplified.</span>
+            </h1>
+            <p>
+                Continuous Integration (CI) is a software development
+                practice in which developers frequently integrate code
+                changes into a shared repository. Every change can
+                trigger an automated build and test workflow, helping
+                teams detect defects early and maintain code quality.
+            </p>
+        </div>
+
+        <div class="hero-art">
+            <div class="orbit">
+                <div class="core">⚙️</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-heading">
+            <h2>How a CI pipeline works</h2>
+            <p>Explore the journey from a code change to automated validation.</p>
+        </div>
+
+        <div class="panel">
+            <div class="pipeline" id="pipeline">
+                <div class="stage" data-stage="0">
+                    <div class="stage-icon">📤</div>
+                    <h3>Code Push</h3>
+                    <p>Developer commits and pushes changes.</p>
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="stage" data-stage="1">
+                    <div class="stage-icon">🔨</div>
+                    <h3>Build</h3>
+                    <p>Compile the application and resolve dependencies.</p>
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="stage" data-stage="2">
+                    <div class="stage-icon">🧪</div>
+                    <h3>Unit Tests</h3>
+                    <p>Check individual functions and classes.</p>
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="stage" data-stage="3">
+                    <div class="stage-icon">🔗</div>
+                    <h3>Integration</h3>
+                    <p>Check components and API behavior.</p>
+                    <span class="stage-status">WAITING</span>
+                </div>
+
+                <div class="stage" data-stage="4">
+                    <div class="stage-icon">🤝</div>
+                    <h3>Contract Tests</h3>
+                    <p>Validate agreements between services.</p>
+                    <span class="stage-status">WAITING</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="primary" onclick="runPipeline(false)">
+                    ▶ Run Pipeline
+                </button>
+                <button class="danger" onclick="runPipeline(true)">
+                    ⚠ Test Failure
+                </button>
+                <button class="secondary" onclick="resetPipeline()">
+                    ↻ Reset
+                </button>
+            </div>
+
+            <div class="pipeline-message" id="message" role="status" aria-live="polite">
+                Ready. Run the pipeline to see each stage execute.
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-heading">
+            <h2>Testing that keeps code reliable</h2>
+            <p>Each testing layer checks a different part of your application.</p>
+        </div>
+
+        <div class="test-grid">
+
+            <article class="test-card">
+                <div class="test-top">
+                    <div class="test-icon purple-bg">🧪</div>
+                    <h3>Unit Testing</h3>
+                </div>
+                <p>
+                    Verifies small, individual pieces of code independently.
+                    It helps identify errors in methods and business logic
+                    before they spread to other components.
+                </p>
+                <span class="chip purple-chip">JUnit 5 · Mockito</span>
+                <button class="learn-btn" onclick="toggleDetails('unit')">
+                    Learn more ↓
+                </button>
+                <div class="test-details" id="unit">
+                    Example: test whether a calculator method correctly
+                    returns the sum of two numbers. Mock external
+                    dependencies when isolation is needed.
+                </div>
+            </article>
+
+            <article class="test-card">
+                <div class="test-top">
+                    <div class="test-icon blue-bg">🔌</div>
+                    <h3>Integration Testing</h3>
+                </div>
+                <p>
+                    Checks whether multiple application components work
+                    together correctly, including controllers, services,
+                    databases and REST endpoints.
+                </p>
+                <span class="chip blue-chip">Spring Boot · MockMvc</span>
+                <button class="learn-btn" onclick="toggleDetails('integration')">
+                    Learn more ↓
+                </button>
+                <div class="test-details" id="integration">
+                    Example: send a simulated HTTP request to a Spring
+                    controller using MockMvc and verify the status code
+                    and response. Use Testcontainers when testing against
+                    real databases or Kafka.
+                </div>
+            </article>
+
+            <article class="test-card">
+                <div class="test-top">
+                    <div class="test-icon green-bg">🤝</div>
+                    <h3>Contract Testing</h3>
+                </div>
+                <p>
+                    Ensures that a service provider follows the API
+                    expectations agreed upon with its consumer.
+                    It helps detect breaking changes between services.
+                </p>
+                <span class="chip green-chip">Pact</span>
+                <button class="learn-btn" onclick="toggleDetails('contract')">
+                    Learn more ↓
+                </button>
+                <div class="test-details" id="contract">
+                    Example: a frontend expects a user API to return
+                    an ID and name. Pact helps verify that the backend
+                    response satisfies the defined consumer contract.
+                </div>
+            </article>
+
+            <article class="test-card">
+                <div class="test-top">
+                    <div class="test-icon orange-bg">🐳</div>
+                    <h3>Testcontainers</h3>
+                </div>
+                <p>
+                    Starts disposable Docker containers for dependencies
+                    so tests can run against realistic infrastructure
+                    rather than relying only on mocks.
+                </p>
+                <span class="chip orange-chip">Docker · Database · Kafka</span>
+                <button class="learn-btn" onclick="toggleDetails('containers')">
+                    Learn more ↓
+                </button>
+                <div class="test-details" id="containers">
+                    Example: start a temporary PostgreSQL or Kafka
+                    container during a test, execute application
+                    operations, and dispose of the container afterward.
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <section>
+        <div class="section-heading">
+            <h2>Why Continuous Integration?</h2>
+            <p>Automated feedback helps developers make safer changes.</p>
+        </div>
+
+        <div class="bottom-grid">
+            <div class="panel">
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <div>
+                        <h3>Early defect detection</h3>
+                        <p>Discover problems shortly after code is changed.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔁</div>
+                    <div>
+                        <h3>Repeatable testing</h3>
+                        <p>Run consistent validation for every code update.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🛡️</div>
+                    <div>
+                        <h3>Better code quality</h3>
+                        <p>Catch regressions before changes are integrated.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 style="margin-bottom:15px">Live pipeline logs</h3>
+                <div class="log" id="logs" aria-live="polite">
+                    <div class="log-line">[SYSTEM] DevFlow initialized.</div>
+                    <div class="log-line">[SYSTEM] Waiting for pipeline execution...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    Built for modern development workflows · <strong>DevFlow.</strong>
+</footer>
+
+<script>
+let isRunning = false;
+
+const stages = [
+    "Code Push",
+    "Build",
+    "Unit Tests",
+    "Integration Tests",
+    "Contract Tests"
+];
+
+function log(message) {
+    const logs = document.getElementById("logs");
+    const line = document.createElement("div");
+    line.className = "log-line";
+    line.textContent = "[" + new Date().toLocaleTimeString() + "] " + message;
+    logs.appendChild(line);
+    logs.scrollTop = logs.scrollHeight;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function setStage(index, state) {
+    const element = document.querySelector(`[data-stage="${index}"]`);
+    element.classList.remove("active", "passed", "failed");
+
+    if (state === "RUNNING") element.classList.add("active");
+    if (state === "PASSED") element.classList.add("passed");
+    if (state === "FAILED") element.classList.add("failed");
+
+    element.querySelector(".stage-status").textContent = state;
+}
+
+async function runPipeline(simulateFailure) {
+    if (isRunning) return;
+    isRunning = true;
+
+    const message = document.getElementById("message");
+    message.textContent = "Pipeline started. Validating code changes...";
+
+    document.getElementById("logs").replaceChildren();
+    log("Code changes received. Starting CI pipeline.");
+
+    stages.forEach((_, i) => setStage(i, "WAITING"));
+
+    try {
+        for (let i = 0; i < stages.length; i++) {
+            setStage(i, "RUNNING");
+            message.textContent = "Running stage: " + stages[i] + "...";
+            log("RUNNING: " + stages[i]);
+
+            await sleep(750);
+
+            if (simulateFailure && i === 2) {
+                setStage(i, "FAILED");
+                log("FAILED: Unit test assertion did not pass.");
+
+                for (let j = i + 1; j < stages.length; j++) {
+                    setStage(j, "SKIPPED");
+                    log("SKIPPED: " + stages[j] + " because an earlier stage failed.");
+                }
+
+                message.textContent =
+                    "❌ Pipeline failed during unit testing. Later stages were skipped.";
+                return;
+            }
+
+            setStage(i, "PASSED");
+            log("PASSED: " + stages[i]);
+        }
+
+        message.textContent =
+            "✅ All pipeline stages passed in this interactive simulation.";
+        log("SUCCESS: Pipeline completed.");
+    } finally {
+        isRunning = false;
+    }
+}
+
+function resetPipeline() {
+    if (isRunning) return;
+
+    stages.forEach((_, i) => setStage(i, "WAITING"));
+
+    document.getElementById("message").textContent =
+        "Pipeline reset. Ready to run again.";
+
+    document.getElementById("logs").replaceChildren();
+    log("SYSTEM: Pipeline reset.");
+}
+
+function toggleDetails(id) {
+    const element = document.getElementById(id);
+    element.classList.toggle("show");
+}
+</script>
+
+</body>
+</html>
